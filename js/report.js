@@ -67,10 +67,10 @@
     x.fillStyle = '#FF6600'; x.fillRect(sw, 0, 14, H);
     const lg = await G.loadImg('img/applus-logo.png'), L = sw + 110, lw = 440; x.drawImage(lg, L, 130, lw, lw * lg.height / lg.width);
     const wrap = (t, mx, y, lh) => { const ws = t.split(' '); let ln = ''; ws.forEach(w => { if (x.measureText(ln + w).width > mx) { x.fillText(ln.trim(), L, y); y += lh; ln = ''; } ln += w + ' '; }); x.fillText(ln.trim(), L, y); return y + lh; };
-    x.fillStyle = '#B34700'; x.font = `700 30px ${FONT}`; x.fillText('I N F O R M E   E J E C U T I V O', L, 780);
-    x.fillStyle = '#14181D'; x.font = `800 98px ${FONT}`; x.fillText('Diagnóstico', L, 900); x.fillText('de campo', L, 1010);
-    x.fillStyle = '#FF6600'; x.fillRect(L, 1050, 150, 12);
-    x.fillStyle = '#444'; x.font = `500 40px ${FONT}`; let y = wrap('Bogotá D. C.' + (place ? ' · ' + place : ''), W - L - 70, 1140, 56);
+    x.fillStyle = '#B34700'; x.font = `700 30px ${FONT}`; x.fillText('I N F O R M E   D E   D I A G N Ó S T I C O', L, 740);
+    x.fillStyle = '#14181D'; x.font = `800 88px ${FONT}`; let y = wrap('Energía segura para todos - ESPT', W - L - 60, 850, 104);
+    x.fillStyle = '#FF6600'; x.fillRect(L, y - 40, 150, 12);
+    x.fillStyle = '#444'; x.font = `500 40px ${FONT}`; y = wrap('Bogotá D. C.' + (place ? ' · ' + place : ''), W - L - 70, y + 50, 56);
     if (areas) { x.font = `500 34px ${FONT}`; y = wrap(areas, W - L - 70, y + 6, 48); }
     x.fillStyle = '#667085'; x.font = `500 32px ${FONT}`; x.fillText('Visita ' + v.id, L, y + 20);
     x.fillStyle = '#14181D'; x.font = `600 32px ${FONT}`; x.fillText(G.fmtDate(v.date), L, H - 330);
