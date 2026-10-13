@@ -63,7 +63,7 @@
 
   function showUnlock(resolve) {
     const s = rd(); const hasBio = !!s?.bio;
-    const el = box(`<div class="mark">${icon('lock')}</div><h1>GS Diagnósticos</h1><p class="muted" style="margin:0">Ingresa tu clave</p>
+    const el = box(`<img class="mark img" src="img/icon-192.png" alt=""><h1>GS Diagnósticos</h1><p class="muted" style="margin:0">Ingresa tu clave</p>
       <div class="field"><input type="password" id="lkP" placeholder="Clave" autocomplete="current-password"></div>
       <div class="err" id="lkErr"></div>
       <button class="btn primary block" id="lkOk">Entrar</button>

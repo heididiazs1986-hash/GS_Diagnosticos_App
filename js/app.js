@@ -46,7 +46,7 @@
     const cur = visits.find(v => !v.reportGenerated);
     const cnt = v => { const o = { E: 0, C: 0, U: 0, S: 0, B: 0 }; recs.filter(r => r.visitId === v.id && !r.borrador).forEach(r => o[r.type]++); return o; };
     const place = v => `${esc(N.visitPlace(v) || v.localidad || 'Sin localidad')}${v.areas?.[0]?.name ? ' · ' + esc(v.areas[0].name) : ''}`;
-    $('#s-home').innerHTML = `<div class="topbar"><div class="brand"><span class="mark">${icon('zap')}</span><h1>GS Diagnósticos</h1></div><button class="iconbtn" data-themebtn aria-label="Tema"></button><button class="iconbtn" data-act="lock" aria-label="Bloquear">${icon('lock')}</button><button class="iconbtn" data-act="settings" aria-label="Ajustes">${icon('sliders')}</button></div>
+    $('#s-home').innerHTML = `<div class="topbar"><div class="brand"><img class="mark" src="img/icon-192.png" alt="" width="36" height="36"><h1>GS Diagnósticos</h1></div><button class="iconbtn" data-themebtn aria-label="Tema"></button><button class="iconbtn" data-act="lock" aria-label="Bloquear">${icon('lock')}</button><button class="iconbtn" data-act="settings" aria-label="Ajustes">${icon('sliders')}</button></div>
     <div class="content">
       <div class="banner"><div class="bt"><h2>Camina el sector.<br>Registra al paso.</h2><p>Recorrido, estructuras, predios y NITS en un solo lugar.</p></div></div>
       ${cur ? `<button class="card accent" data-act="open:${cur.id}" style="text-align:left;width:100%"><div class="eyebrow">Recorrido en curso</div><h3 style="font-size:18px">${place(cur)}</h3><div class="row wrap"><span class="chip">ID ${cur.id}</span><span class="chip">${cur.cds?.length || 0} CD</span>${(() => { const k = cnt(cur); return `<span class="chip">${k.E + k.C + k.U + k.S + k.B} registros</span>`; })()}</div><span class="btn primary block">${icon('route')} Continuar recorrido</span></button>` : ''}
@@ -197,18 +197,42 @@
     $('#xdl', s.el).onclick = async () => { G.download(res.blob, res.name); await done(); s.close(true); G.toast('ZIP descargado'); };
     $('#xsh', s.el).onclick = async () => { if (await G.shareFile(res.blob, res.name)) { await done(); s.close(true); } else G.toast('Compartir no está disponible aquí: usa Descargar'); };
   }
+  /* elegir fotos del informe: toque = incluir/quitar (el orden es el de selección), con pie de imagen editable */
+  function photoPicker(v, sel, onDone) {
+    const pool = Rep.photoPool(v, S.recs), MAX = Rep.MAX_PHOTOS;
+    const s = G.sheet({ title: 'Fotos del informe', body: '<div id="phBody"></div>', footer: '<button class="btn primary block" id="phOk">Listo</button>' });
+    const body = $('#phBody', s.el), idx = id => sel.findIndex(x => x.id === id);
+    const draw = () => {
+      const grp = ['Hallazgos', 'Registros'].map(g => { const l = pool.filter(p => p.src === g); return l.length ? `<h3 class="phh">${g} <span class="chip">${l.length}</span></h3><div class="pgrid">${l.map(p => { const k = idx(p.id); return `<button class="pt ${k >= 0 ? 'on' : ''}" data-ph="${esc(p.id)}"><img loading="lazy" decoding="async" src="${p.dataURL}" alt="">${k >= 0 ? `<b>${k + 1}</b>` : ''}</button>`; }).join('')}</div>` : ''; }).join('');
+      const caps = sel.map((x, k) => { const p = pool.find(q => q.id === x.id); return p ? `<div class="caprow"><img src="${p.dataURL}" alt=""><div class="grow"><label class="l">Pie de foto ${k + 1}</label><input data-cap="${esc(x.id)}" value="${esc(x.cap)}" maxlength="140"></div><div class="mv"><button class="iconbtn" data-mv="${esc(x.id)}:-1" ${k === 0 ? 'disabled' : ''} aria-label="Subir">▲</button><button class="iconbtn" data-mv="${esc(x.id)}:1" ${k === sel.length - 1 ? 'disabled' : ''} aria-label="Bajar">▼</button></div></div>` : ''; }).join('');
+      body.innerHTML = `<p class="muted small" style="margin:0 0 8px">Toca las fotos que irán en el informe (máximo ${MAX}, caben en una página). <b>${sel.length}/${MAX}</b> elegidas.</p>${sel.length ? `<h3 class="phh">Elegidas · pies de foto</h3>${caps}` : ''}${pool.length ? grp : '<div class="empty">Aún no hay fotos en esta visita.</div>'}`;
+    };
+    body.addEventListener('click', e => {
+      const t = e.target.closest('[data-ph]'), m = e.target.closest('[data-mv]');
+      if (t) { const id = t.dataset.ph, k = idx(id); if (k >= 0) sel.splice(k, 1); else if (sel.length >= MAX) return G.toast(`Máximo ${MAX} fotos`); else sel.push({ id, cap: pool.find(p => p.id === id).cap }); draw(); return; }
+      if (m) { const [id, dl] = [m.dataset.mv.slice(0, m.dataset.mv.lastIndexOf(':')), +m.dataset.mv.slice(m.dataset.mv.lastIndexOf(':') + 1)], k = idx(id), n = k + dl; if (n >= 0 && n < sel.length) { [sel[k], sel[n]] = [sel[n], sel[k]]; draw(); } }
+    });
+    body.addEventListener('input', e => { const c = e.target.closest('[data-cap]'); if (c) { const x = sel[idx(c.dataset.cap)]; if (x) x.cap = c.value; } });
+    $('#phOk', s.el).onclick = () => { s.close(true); onDone(); };
+    draw();
+  }
   async function reportSheet() {
     const v = S.visit, st = Rep.stats(v, S.recs), secs = Rep.sections(v, st), auto = Object.fromEntries(secs.map(x => [x[0], x[2]]));
+    const sel = Rep.picked(v, S.recs).map(p => ({ id: p.id, cap: p.cap }));
     const dr = secs.map(([k, t, text]) => `<div class="field"><label class="l">${esc(t)}</label>${G.dictField('rp_' + k, text)}</div>`).join('');
-    const s = G.sheet({ title: 'Informe Word', body: `<div class="nits"><div class="h">${icon('spark')} NITS redactó estas secciones con tus registros</div><span class="small">Revísalas y corrígelas: lo que cambies sirve para que NITS aprenda a redactar como tú.</span></div>${dr}
-      <label class="chk"><input type="checkbox" id="rpPh"> <span>Incluir una foto de cada registro de campo (el informe será más pesado)</span></label>
+    const s = G.sheet({ title: 'Informe ejecutivo', body: `<div class="nits"><div class="h">${icon('spark')} NITS redactó estas secciones con tus registros</div><span class="small">Revísalas y corrígelas: lo que cambies sirve para que NITS aprenda a redactar como tú. El informe es ejecutivo: máximo 5 páginas, con gráficos y las fotos que elijas.</span></div>
+      <button class="btn block" id="rpPh">${icon('camera')} <span id="rpPhN"></span></button>
+      ${dr}
       <div class="field"><label class="l">Elaboró (aparece en portada y firma)</label><input id="rpAu" value="${esc(G.settings.get().autor || '')}" placeholder="Nombre de la gestora"></div>`,
       footer: `<button class="btn primary" id="rpGo">${icon('file')} Generar Word</button>` });
+    const lab = () => { $('#rpPhN', s.el).textContent = `Elegir fotos del informe (${sel.length}/${Rep.MAX_PHOTOS})`; };
+    lab(); $('#rpPh', s.el).onclick = () => photoPicker(v, sel, lab);
     $('#rpGo', s.el).onclick = async () => {
       const b = $('#rpGo', s.el); b.disabled = true; b.textContent = 'Generando…'; v.report = v.report || {};
       for (const k of Object.keys(auto)) { const val = $('#rp_' + k, s.el).value.trim(); if (val !== auto[k]) { v.report[k] = val; N.learnText('informe-' + k, auto[k], val); } else delete v.report[k]; }
+      v.report.photos = sel.map(x => ({ ...x }));
       G.settings.set({ autor: $('#rpAu', s.el).value.trim() });
-      try { const r = await Rep.build(v, S.recs, { recPhotos: $('#rpPh', s.el).checked }); G.download(r.blob, r.name); v.reportGenerated = true; v.reportDate = G.dateLocal(); A.save(); s.close(true); await A.refresh(); G.toast('Informe generado'); }
+      try { const r = await Rep.build(v, S.recs); G.download(r.blob, r.name); v.reportGenerated = true; v.reportDate = G.dateLocal(); A.save(); s.close(true); await A.refresh(); G.toast('Informe generado'); }
       catch (e) { G.toast('No se pudo generar: ' + e.message); b.disabled = false; b.innerHTML = `${icon('file')} Generar Word`; }
     };
   }

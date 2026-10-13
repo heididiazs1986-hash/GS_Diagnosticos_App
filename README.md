@@ -7,7 +7,7 @@ App de campo para Gestión Social (Bogotá D. C.) que une **GS DX** (registro pu
 2. **Recorrido**: línea de tiempo viva. Con **Registrar** capturas al paso: estructura, cliente, UNC o predio para suspensión, baldío, hallazgo, foto rápida, contacto, pendiente, nuevo barrio/sector o nuevo CD. Cada registro toma el GPS solo y hereda el CD activo y el barrio.
 3. **Registros**: lista por tipo, filtrada por CD y estado (por exportar, exportados, borradores).
 4. **Gestión**: territorio, gestión social, contactos y pendientes.
-5. **Salidas**: revisión previa, Excel + ZIP de fotos por CD (formato GS DX), informe Word y respaldos.
+5. **Salidas**: revisión previa, Excel + ZIP de fotos por CD (formato GS DX), informe ejecutivo Word (APPLUS+, máx. 5 páginas, gráficos y fotos elegidas con pie) y respaldos.
 
 ## Reglas de GS DX que se conservan
 Texto en MAYÚSCULAS, 3 a 7 fotos (1280 px, JPEG 72 %), coordenadas con precisión, punto físico tomado de las estructuras del CD, longitud al nodo calculada, serie de medidor y estructura (CD + PF) sin duplicados, exportación pendiente/histórica con los mismos encabezados y carpetas de fotos. Los registros incompletos se guardan como **borrador** y no se exportan.
