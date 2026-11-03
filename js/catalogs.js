@@ -54,7 +54,7 @@
     road: { title: 'Estado de las vías', items: ['Buen estado', 'Transitable con precaución', 'Presencia de barro', 'Superficie deslizante', 'Mucha piedra', 'Huecos', 'Pérdida de banca', 'Pendiente pronunciada', 'Curvas cerradas', 'Paso angosto', 'Cruce de quebrada', 'Dificultad en temporada de lluvias', 'Ingreso difícil para vehículos pesados'] }
   };
   C.managementTopics = ['Alcance de la visita', 'Norma técnica', 'Redes internas', 'Redes externas', 'Tipos de predios susceptibles de normalización', 'Proceso previo de Redes', 'Etapas del proceso de normalización', 'Gestión documental futura', 'Responsabilidades de la comunidad', 'Atención de inquietudes'];
-  C.RESPONSABLES = ['ENEL', 'Redes', 'Gestión Social', 'INMEL', 'Comunidad', 'Usuario', 'Otro'];
+  C.RESPONSABLES = ['ENEL', 'Redes', 'Gestión Social', 'APPLUS+', 'Comunidad', 'Usuario', 'Otro'];
   C.PEND_ESTADOS = ['Abierto', 'En gestión', 'En espera', 'Cumplido', 'Cerrado'];
   C.glossary = {
     'UNC': 'Usuario No Cliente: predio que requiere o recibe el servicio de energía, pero no cuenta con una cuenta comercial activa asociada.',
