@@ -65,7 +65,7 @@
     const hero = await G.loadImg('img/hero.jpg'), sw = W * .42, k = Math.max(sw / hero.width, H / hero.height);
     x.save(); x.beginPath(); x.rect(0, 0, sw, H); x.clip(); x.drawImage(hero, (sw - hero.width * k) / 2, (H - hero.height * k) / 2, hero.width * k, hero.height * k); x.restore();
     x.fillStyle = '#FF6600'; x.fillRect(sw, 0, 14, H);
-    const lg = await G.loadImg('img/applus-logo.png'), L = sw + 110, lw = 440; x.drawImage(lg, L, 130, lw, lw * lg.height / lg.width);
+    const lg = await G.loadImg('img/gs-logo.png'), L = sw + 110, lw = 440; x.drawImage(lg, L, 130, lw, lw * lg.height / lg.width);
     const wrap = (t, mx, y, lh) => { const ws = t.split(' '); let ln = ''; ws.forEach(w => { if (x.measureText(ln + w).width > mx) { x.fillText(ln.trim(), L, y); y += lh; ln = ''; } ln += w + ' '; }); x.fillText(ln.trim(), L, y); return y + lh; };
     x.fillStyle = '#B34700'; x.font = `700 30px ${FONT}`; x.fillText('I N F O R M E   D E   D I A G N Ó S T I C O', L, 740);
     x.fillStyle = '#14181D'; x.font = `800 88px ${FONT}`; let y = wrap('Energía segura para todos - ESPT', W - L - 60, 850, 104);
@@ -180,7 +180,7 @@
     kids.push(H3('Conclusiones'), P(cap(secs.conclusion, 650)), H3('Recomendaciones'), P(cap(secs.recommendation, 750)));
     kids.push(new Paragraph({ spacing: { before: 700 }, border: { top: { color: '333333', style: BorderStyle.SINGLE, size: 6 } }, tabStops: [{ type: TabStopType.LEFT, position: 5400 }], children: [new TextRun({ text: set.autor || 'Elaboró', bold: true, size: 17, font: 'Arial' }), new TextRun({ text: '\tGestión Social · APPLUS+', size: 16, color: '667085', font: 'Arial' })] }));
 
-    const logo = await fetchAB('img/applus-logo.png');
+    const logo = await fetchAB('img/gs-logo.png');
     const header = new Header({ children: [new Paragraph({ tabStops: [{ type: TabStopType.RIGHT, position: 10206 }], border: { bottom: { color: 'FF6600', style: BorderStyle.SINGLE, size: 10, space: 4 } }, children: [new TextRun({ text: 'Informe de diagnóstico de gestión social', size: 15, color: '667085', font: 'Arial' }), new TextRun({ text: '\t', size: 15 }), new ImageRun({ data: logo, transformation: { width: 84, height: 26 } })] })] });
     const footer = new Footer({ children: [new Paragraph({ tabStops: [{ type: TabStopType.RIGHT, position: 10206 }], children: [new TextRun({ text: `Visita ${v.id}${place ? ' · ' + place : ''}`, size: 15, color: '667085', font: 'Arial' }), new TextRun({ text: '\tPágina ', size: 15, color: '667085', font: 'Arial' }), new TextRun({ children: [PageNumber.CURRENT], size: 15, color: '667085', font: 'Arial' }), new TextRun({ text: ' de ', size: 15, color: '667085', font: 'Arial' }), new TextRun({ children: [PageNumber.TOTAL_PAGES], size: 15, color: '667085', font: 'Arial' })] })] });
     const doc = new Document({ styles: { default: { document: { run: { font: 'Arial', size: 18 } } } }, sections: [coverSec, { properties: { type: SectionType.NEXT_PAGE, page: { margin: { top: 900, right: 850, bottom: 800, left: 850, header: 400, footer: 350 } } }, headers: { default: header }, footers: { default: footer }, children: kids }] });
