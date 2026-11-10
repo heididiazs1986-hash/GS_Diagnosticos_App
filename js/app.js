@@ -54,6 +54,7 @@
       <div class="kpis k3"><div class="kpi ${pend ? 'on' : ''}"><b>${pend}</b><span>Por exportar</span></div><div class="kpi"><b>${drafts}</b><span>Borradores</span></div><div class="kpi"><b>${open}</b><span>Pendientes</span></div></div>
       <div class="eyebrow" style="margin-top:4px">Visitas</div>
       ${visits.length ? visits.map(v => { const k = cnt(v); return `<div class="card flat"><div class="row"><button class="grow" data-act="open:${v.id}" style="text-align:left;background:none;border:0;padding:0"><h3 style="font-size:16px">${place(v)}</h3><div class="muted small">ID ${v.id} · ${G.fmtDate(v.date)} · ${v.reportGenerated ? 'Informe generado' : 'En progreso'}</div></button><button class="iconbtn" data-act="vmenu:${v.id}" aria-label="Opciones">${icon('chev')}</button></div><div class="row wrap"><span class="chip">${icon('pole')} ${k.E}</span><span class="chip">${icon('gauge')} ${k.C}</span><span class="chip p">${icon('home')} ${k.U}</span><span class="chip bad">${icon('ban')} ${k.S}</span><span class="chip warn">${icon('lot')} ${k.B}</span><span class="chip">${icon('zap')} ${v.cds?.length || 0} CD</span></div></div>`; }).join('') : '<div class="empty">Aún no hay visitas. Crea la primera para empezar a recorrer.</div>'}
+      <div style="text-align:center;font:600 11.5px/1.4 Manrope,'Segoe UI',Arial,sans-serif;opacity:.6;padding:10px 12px 18px">Desarrollado por Heidi Díaz</div>
     </div>`;
     G.hydrate($('#s-home')); renderTop();
   }
