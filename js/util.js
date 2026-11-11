@@ -151,6 +151,7 @@ window.GS = window.GS || {};
   /* ---------- dictado ---------- */
   let rec = null;
   function dictate(ta, btn) {
+    if (window.GS_VOZ) return window.GS_VOZ.toggle(ta, btn);
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return toast('El dictado no está disponible en este navegador');
     if (rec) { rec.stop(); return; }
