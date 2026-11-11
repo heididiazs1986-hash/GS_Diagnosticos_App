@@ -1,7 +1,7 @@
 /* GS Diagnósticos · service worker: red primero, caché de respaldo (funciona sin conexión) */
-const CACHE = 'gsd-v12';
+const CACHE = 'gsd-v13';
 const CORE = ['./', 'index.html', 'styles.css?v=4', 'manifest.json', 'img/icon.svg', 'img/banner.jpg', 'img/hero.jpg', 'img/gs-process-logo.png', 'img/gs-logo.png', 'img/icon-192.png','img/gsb-Diagnosticos.webp','img/gs-mark.svg',
-  'js/gs-voz.js?v=1', 'js/gs-lanzador.js?v=4', 'js/util.js?v=3', 'js/db.js?v=2', 'js/catalogs.js?v=4', 'js/nits.js?v=2', 'js/lock.js?v=2', 'js/forms.js?v=2', 'js/export.js?v=2', 'js/report.js?v=4', 'js/sheets.js?v=2', 'js/vendor-docx.js?v=2', 'js/app.js?v=4', 'js/notes.js?v=1'];
+  'js/gs-voz.js?v=1', 'js/gs-lanzador.js?v=5', 'js/util.js?v=3', 'js/db.js?v=2', 'js/catalogs.js?v=4', 'js/nits.js?v=2', 'js/lock.js?v=2', 'js/forms.js?v=2', 'js/export.js?v=2', 'js/report.js?v=4', 'js/sheets.js?v=2', 'js/vendor-docx.js?v=2', 'js/app.js?v=4', 'js/notes.js?v=1'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => Promise.all(CORE.map(u => c.add(u).catch(() => { })))).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
