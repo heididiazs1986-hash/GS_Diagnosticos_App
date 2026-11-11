@@ -274,3 +274,20 @@ details.card[open]>summary{margin-bottom:10px}
 .gsb span{display:none}
 .gsb{height:104px}
 }
+
+/* ---------- Notas rápidas ---------- */
+.nfab{position:fixed;left:max(16px,calc(50% - 380px + 16px));bottom:calc(84px + env(safe-area-inset-bottom));z-index:29;width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;font-size:23px;box-shadow:0 4px 14px rgba(20,24,29,.18)}
+.nfab:active{background:var(--surface-2)}
+.nfab-n{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;border-radius:10px;background:var(--primary);color:var(--on-primary);font:800 11px/20px var(--f-body);text-align:center;padding:0 5px}
+.notes-sheet{display:flex;flex-direction:column;gap:12px}
+.nt-search{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:var(--r);padding:0 12px;background:var(--surface);min-height:46px}
+.nt-search input{border:0;background:none;outline:none;flex:1;font:inherit;color:inherit;min-height:44px}
+.nt-list{display:flex;flex-direction:column;gap:10px}
+.nt{border:1.5px solid var(--line-soft);border-left:5px solid var(--tertiary);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.nt.pin{border-left-color:var(--primary)}
+.nt-t{display:block;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;line-height:1.5;padding:11px 12px 4px;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow:hidden}
+.nt-f{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 6px 8px 12px;flex-wrap:wrap}
+.nt-b{display:flex;gap:2px}
+.nt-b .iconbtn{width:38px;height:38px;border:0;background:none;font-size:18px}
+.nt-visit{display:inline-flex;align-items:center;gap:3px}
+.nt-visit svg.ic{font-size:13px}
