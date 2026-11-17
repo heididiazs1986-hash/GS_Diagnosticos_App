@@ -166,11 +166,11 @@
     const r = await R.open(type, null, ctx()); if (r) await A.refresh();
   }
   async function quick() {
-    const tiles = [['E', 'pole', 'Estructura', 'Poste o nodo'], ['C', 'gauge', 'Cliente', 'Legalizado'], ['U', 'home', 'UNC / Susp.', 'Sin legalizar'], ['B', 'lot', 'Baldío', 'No habitable'], ['H', 'search', 'Hallazgo', 'Social o territorio'], ['F', 'camera', 'Foto rápida', 'Con nota'], ['P', 'user', 'Contacto', 'Persona'], ['T', 'bell', 'Pendiente', 'Alerta'], ['A', 'pin', 'Sector', 'Nuevo barrio'], ['CD', 'zap', 'Nuevo CD', 'Transformador']];
-    const s = G.sheet({ title: '¿Qué encontraste?', body: `<div class="tiles">${[['Territorio', ['H', 'F', 'P', 'T', 'A']], ['Caracterización', ['E', 'C', 'U', 'B', 'CD']]].map(([h, ks]) => `<h4 class="tg">${h}</h4>` + ks.map(k => tiles.find(t => t[0] === k)).map(t => `<button class="tile" data-q="${t[0]}">${icon(t[1])}${t[2]}<small>${t[3]}</small></button>`).join('')).join('')}</div>${A.cd() ? `<div class="muted small" style="text-align:center">Registrando en CD <b>${esc(A.cd().code)}</b> · ${esc(A.area()?.name || '')}</div>` : ''}` });
+    const tiles = [['E', 'pole', 'Estructura', 'Poste o nodo'], ['C', 'gauge', 'Cliente', 'Legalizado'], ['U', 'home', 'UNC', 'Legalizar medida'], ['S', 'ban', 'Suspensión', 'Sin habitante'], ['B', 'lot', 'Baldío', 'No habitable'], ['H', 'search', 'Hallazgo', 'Social o territorio'], ['F', 'camera', 'Foto rápida', 'Con nota'], ['P', 'user', 'Contacto', 'Persona'], ['T', 'bell', 'Pendiente', 'Alerta'], ['A', 'pin', 'Sector', 'Nuevo barrio'], ['CD', 'zap', 'Nuevo CD', 'Transformador']];
+    const s = G.sheet({ title: '¿Qué encontraste?', body: `<div class="tiles">${[['Territorio', ['H', 'F', 'P', 'T', 'A']], ['Caracterización', ['E', 'C', 'U', 'S', 'B', 'CD']]].map(([h, ks]) => `<h4 class="tg">${h}</h4>` + ks.map(k => tiles.find(t => t[0] === k)).map(t => `<button class="tile" data-q="${t[0]}">${icon(t[1])}${t[2]}<small>${t[3]}</small></button>`).join('')).join('')}</div>${A.cd() ? `<div class="muted small" style="text-align:center">Registrando en CD <b>${esc(A.cd().code)}</b> · ${esc(A.area()?.name || '')}</div>` : ''}` });
     $$('[data-q]', s.el).forEach(b => b.onclick = async () => {
       const k = b.dataset.q; s.close(true);
-      if (['E', 'C', 'U', 'B'].includes(k)) return addRecord(k);
+      if (['E', 'C', 'U', 'S', 'B'].includes(k)) return addRecord(k);
       if (k === 'H') return SH.finding(); if (k === 'F') return SH.finding(null, { camera: true });
       if (k === 'P') return SH.person(); if (k === 'T') return SH.pending(); if (k === 'A') return SH.area(); if (k === 'CD') return SH.cdNew();
     });

@@ -94,8 +94,9 @@
       const chk = (k, label, extra = '') => `<label class="chk"><input type="checkbox" data-c="${k}" ${d[k] === 'Sí' ? 'checked' : ''}> <span>${label}</span></label>`;
       const pfField = () => {
         if (kind() === 'E') return txt('PuntoFisico', 'Punto físico (nodo)', { req: true, up: true, ph: 'Ej.: 123456 o P-12' });
-        if (d.__newPf || !pfs.length) return fld('PuntoFisico', 'Punto físico', `<input data-f="PuntoFisico" value="${esc(d.PuntoFisico || '')}" autocapitalize="characters" placeholder="Escribe el punto físico">`, { req: true, hint: pfs.length ? '<a href="#" data-pfback>Elegir de las estructuras del CD</a>' : 'Este CD aún no tiene estructuras: se guardará el texto, sin calcular la longitud al nodo.' });
-        return fld('PuntoFisico', 'Punto físico (de las estructuras del CD)', `<select data-f="PuntoFisico"><option value="">Selecciona…</option>${pfs.map(x => `<option ${d.PuntoFisico === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}<option value="__new">＋ Otro punto físico…</option></select>`, { req: true });
+        const list = [...new Set([...pfs, d.PuntoFisico].filter(Boolean))].sort((x, y) => x.localeCompare(y, 'es', { numeric: true }));
+        if (!list.length) return fld('PuntoFisico', 'Punto físico (estructura del CD)', `<select data-f="PuntoFisico" disabled><option value="">Sin estructuras</option></select>`, { req: true, hint: '<b>Primero registra la estructura (nodo) de este CD</b> para vincular este registro.' });
+        return fld('PuntoFisico', 'Punto físico (estructura del CD)', `<select data-f="PuntoFisico"><option value="">Selecciona…</option>${list.map(x => `<option ${d.PuntoFisico === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>`, { req: true });
       };
       const gpsHtml = () => {
         const has = d.Latitud && d.Longitud, a = +d.Precision || 0, cls = !has ? '' : a <= 15 ? 'ok' : 'mid';
@@ -106,7 +107,6 @@
 
       const body = () => {
         const t = kind(); let h = '';
-        if (t === 'U' || t === 'S') h += `<div class="seg" id="claseSeg"><button type="button" data-cl="U" class="${t === 'U' ? 'on' : ''}">UNC</button><button type="button" data-cl="S" class="${t === 'S' ? 'on' : ''}">Predio para suspensión</button></div>`;
         h += `<div class="row wrap"><span class="chip p">${icon('zap')} CD ${esc(d.Transformador)}${d.Capacidad_kVA ? ' · ' + esc(d.Capacidad_kVA) + ' kVA' : ''}</span><span class="chip t">${icon('pin')} ${esc([d.Localidad, d.Barrio].filter(Boolean).join(' · ') || 'Sin área')}</span></div>`;
         h += '<div class="stack">';
         if (t === 'E') {
