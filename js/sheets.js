@@ -161,14 +161,15 @@
       body: `${field('Sector', `<select id="fiA">${v.areas.map(x => `<option value="${x.id}" ${x.id === it.areaId ? 'selected' : ''}>${esc(areaLabel(x))}</option>`).join('')}</select>`)}
       ${field('Lo que observaste o te dijeron', G.dictField('fiO', it.obs, 'Escribe o dicta…'))}<div class="sugs" id="fiSg"></div>
       <div class="field"><label class="l">Fotos</label><div class="g2" id="fiPh">${phs()}</div><button type="button" class="btn block" id="fiAdd">${icon('camera')} Agregar foto</button></div>
-      <div class="nits"><div class="h">${icon('spark')} NITS · clasificación y redacción</div><div class="sugs" id="fiCat"></div>${G.dictField('fiT', it.nitsText, 'El texto del informe aparece aquí; puedes editarlo')}<span class="muted small">Si lo corriges, NITS aprende cómo redactas.</span></div>
+      <div class="nits"><div class="h">${icon('spark')} NITS · clasificación y redacción</div><div class="radios" id="fiCat" role="radiogroup" aria-label="Clasificación"></div>${G.dictField('fiT', it.nitsText, 'El texto del informe aparece aquí; puedes editarlo')}<span class="muted small">Si lo corriges, NITS aprende cómo redactas.</span></div>
       ${gpsBox(it, 'fiGps')}`,
       footer: `${isNew ? '' : '<button class="btn danger" id="fiDel">' + icon('trash') + '</button>'}<button class="btn primary" id="fiOk">Guardar hallazgo</button>`,
       beforeClose: async () => true
     });
     const O = $('#fiO', s.el), T = $('#fiT', s.el);
-    const cats = () => { const r = N.classify(O.value); predicted = r.category; const sel = it.category || r.category; const list = moreCats ? [...new Set([...r.ranked, sel, ...C.HALLAZGO_CATS])] : [...new Set([sel, ...r.ranked])].slice(0, 3);
-      $('#fiCat', s.el).innerHTML = list.map(c => `<button type="button" data-cat="${esc(c)}" style="${c === sel ? 'background:var(--tertiary);border-color:var(--tertiary);color:#00263A' : ''}">${esc(c)}</button>`).join('') + (moreCats ? '' : '<button type="button" data-more>Otra categoría…</button>'); };
+    const cats = () => { const r = N.classify(O.value); predicted = r.category; const sel = it.category || r.category;
+      const list = [...new Set([...C.HALLAZGO_CATS, sel])].sort((x, y) => x.localeCompare(y, 'es'));
+      $('#fiCat', s.el).innerHTML = list.map(c => `<button type="button" role="radio" aria-checked="${c === sel}" class="rad${c === sel ? ' on' : ''}" data-cat="${esc(c)}"><i></i><span>${esc(c)}</span>${c === r.category && O.value.trim() ? '<em>sugerida</em>' : ''}</button>`).join(''); };
     const run = () => {
       const r = N.classify(O.value); predicted = r.category; if (!chosen) it.category = r.category; else it.category = chosen;
       if (!edited) { gen = N.narrate(O.value, it.category); T.value = O.value.trim() ? gen : ''; }

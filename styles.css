@@ -200,6 +200,12 @@ input[readonly]{background:var(--surface-2);color:var(--ink-2)}
 .tile small{font-weight:600;color:inherit;opacity:.75;font-size:11px}
 .nits{border:1.5px solid var(--tertiary);background:var(--tertiary-soft);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:8px;color:var(--ink)}
 .nits .h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--tertiary-ink)}
+.radios{display:flex;flex-direction:column;gap:6px}
+.radios .rad{display:flex;align-items:center;gap:12px;width:100%;min-height:46px;padding:8px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font-weight:700;font-size:14px;text-align:left}
+.radios .rad i{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--tertiary);background:var(--surface);position:relative}
+.radios .rad.on{border-color:var(--tertiary);background:var(--tertiary-soft)}
+.radios .rad.on i::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--tertiary)}
+.radios .rad em{margin-left:auto;font-style:normal;font-size:11px;font-weight:800;color:var(--tertiary-ink)}
 .sugs{display:flex;gap:6px;flex-wrap:wrap}
 .sugs button{border:1px solid var(--tertiary);background:var(--surface);border-radius:999px;padding:5px 11px;font-weight:700;font-size:12.5px;color:var(--ink)}
 
