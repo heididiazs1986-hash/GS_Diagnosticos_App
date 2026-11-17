@@ -182,8 +182,8 @@
       const fe = e.target.closest('[data-fe]'); if (fe) { await G.editPhoto(it.photos[+fe.dataset.fe]); $('#fiPh', s.el).innerHTML = phs(); G.hydrate(s.el); }
     });
     s.el.addEventListener('input', e => { const i = e.target.dataset.fc; if (i !== undefined) it.photos[+i].caption = e.target.value; });
-    const addPhoto = () => { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true; inp.setAttribute('capture', 'environment'); inp.onchange = async () => { for (const f2 of inp.files) { try { it.photos.push(await G.compress(f2, 1400, .78)); } catch { G.toast('No se pudo leer una foto'); } } $('#fiPh', s.el).innerHTML = phs(); G.hydrate(s.el); }; inp.click(); };
-    $('#fiAdd', s.el).onclick = addPhoto; if (opts.camera) setTimeout(addPhoto, 250);
+    const addPhoto = (cam) => { const go = async fs => { for (const f2 of fs) { try { it.photos.push(await G.compress(f2, 1400, .78)); } catch { G.toast('No se pudo leer una foto'); } } $('#fiPh', s.el).innerHTML = phs(); G.hydrate(s.el); }; if (cam === true) { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true; inp.setAttribute('capture', 'environment'); inp.onchange = () => go([...inp.files]); inp.click(); } else G.photoSource(go); };
+    $('#fiAdd', s.el).onclick = () => addPhoto(); if (opts.camera) setTimeout(() => addPhoto(true), 250);
     const repaintF = wireGps(s.el, it, 'fiGps');
     if (isNew) G.gps({ timeout: 8000 }).then(r => { if (!it.lat) { Object.assign(it, { lat: String(r.lat), lon: String(r.lon), acc: String(r.acc), gpsISO: r.ts }); repaintF(); } }).catch(() => { });
     run();

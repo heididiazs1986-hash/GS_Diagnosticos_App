@@ -236,9 +236,7 @@
       /* fotos */
       function pickPhoto() {
         const left = MAXF - (d.Fotos || []).length; if (left <= 0) return;
-        const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true; inp.setAttribute('capture', 'environment');
-        inp.onchange = async () => { const files = [...inp.files].slice(0, left); for (const f of files) { try { d.Fotos.push(await G.compress(f)); } catch { G.toast('No se pudo leer una foto'); } } $('#phWrap', root).innerHTML = photosHtml(); G.hydrate(root); };
-        inp.click();
+        G.photoSource(async fs => { const files = fs.slice(0, left); for (const f of files) { try { d.Fotos.push(await G.compress(f)); } catch { G.toast('No se pudo leer una foto'); } } $('#phWrap', root).innerHTML = photosHtml(); G.hydrate(root); });
       }
       function wireStatic() { wireGps(); }
       wireStatic();

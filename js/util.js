@@ -22,6 +22,7 @@ window.GS = window.GS || {};
   const P = {
     plus: '<path d="M5 12h14M12 5v14"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>', check: '<path d="M20 6 9 17l-5-5"/>',
     chev: '<path d="m9 18 6-6-6-6"/>', down: '<path d="m6 9 6 6 6-6"/>', back: '<path d="m12 19-7-7 7-7M19 12H5"/>',
+    image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
     camera: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
     pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
     zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
@@ -191,6 +192,13 @@ window.GS = window.GS || {};
     return new Blob([...parts, ...cent, new Uint8Array(end.buffer)], { type: 'application/zip' });
   }
 
+  /* Fuente de fotos: tomar con la cámara o elegir fotos ya guardadas en el celular */
+  function photoSource(onFiles) {
+    const pick = (cam) => { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true; if (cam) inp.setAttribute('capture', 'environment'); inp.onchange = () => { const fs = [...inp.files]; if (fs.length) onFiles(fs); }; inp.click(); };
+    const s = sheet({ title: 'Agregar foto', body: `<div class="g2"><button type="button" class="btn block primary" data-ps="cam">${icon('camera')} Tomar foto</button><button type="button" class="btn block" data-ps="gal">${icon('image')} Elegir de la galería</button></div>` });
+    s.el.querySelectorAll('[data-ps]').forEach(b => b.onclick = () => { const cam = b.dataset.ps === 'cam'; s.close(true); pick(cam); });
+  }
+
   Object.assign(G, { $, $$, esc, uid, dateLocal, timeLocal, stamp, fmtDate, fmtTimeISO, onlyDigits, upperAlnum, upperCode, upperText, safeName, joinNatural,
-    icon, hydrate, toast, sheet, confirmBox, choose, gps, haversine, compress, loadImg, dataURLtoU8, editPhoto, dictate, dictField, download, shareFile, makeZip });
+    icon, hydrate, toast, sheet, confirmBox, choose, gps, haversine, compress, loadImg, dataURLtoU8, editPhoto, dictate, dictField, download, shareFile, makeZip, photoSource });
 })(window.GS);
