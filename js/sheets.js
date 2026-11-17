@@ -135,6 +135,21 @@
     };
   };
 
+  /* ---------- botón de ubicación (hallazgo, contacto, pendiente) ---------- */
+  const gpsBox = (it, id) => `<div class="gps ${it.lat ? 'ok' : ''}" id="${id}"><span class="dot"></span><div class="grow"><b>${it.lat ? it.lat + ', ' + it.lon : 'Sin ubicación'}</b><small>${it.acc ? '±' + it.acc + ' m' : 'Toca Capturar para guardar la ubicación'}</small></div><button type="button" class="btn sm primary" data-gb>${icon('pin')} Capturar</button></div>`;
+  const wireGps = (root, it, id) => {
+    const box = $('#' + id, root); if (!box) return () => { };
+    const b = $('[data-gb]', box), t = $('b', box), sm = $('small', box);
+    const paint = () => { box.className = 'gps' + (it.lat ? (+it.acc <= 15 ? ' ok' : ' mid') : ''); t.textContent = it.lat ? `${it.lat}, ${it.lon}` : 'Sin ubicación'; sm.textContent = it.acc ? `±${it.acc} m` : 'Toca Capturar para guardar la ubicación'; b.innerHTML = `${icon('pin')} ${it.lat ? 'Recapturar' : 'Capturar'}`; };
+    b.onclick = async () => {
+      box.classList.add('wait'); t.textContent = 'Buscando señal…'; b.disabled = true;
+      try { const r = await G.gps({ timeout: 12000, onProgress: p => { sm.textContent = `Mejor precisión hasta ahora: ±${p.acc} m`; } }); Object.assign(it, { lat: String(r.lat), lon: String(r.lon), acc: String(r.acc), gpsISO: r.ts }); G.toast(`Ubicación guardada ±${r.acc} m`); }
+      catch (e) { G.toast(e.message || 'No se pudo obtener la ubicación'); }
+      b.disabled = false; paint();
+    };
+    paint(); return paint;
+  };
+
   /* ---------- hallazgo ---------- */
   SH.finding = (f, opts = {}) => {
     const v = A().visit(), a = A().area(), isNew = !f;
@@ -147,7 +162,7 @@
       ${field('Lo que observaste o te dijeron', G.dictField('fiO', it.obs, 'Escribe o dicta…'))}<div class="sugs" id="fiSg"></div>
       <div class="field"><label class="l">Fotos</label><div class="g2" id="fiPh">${phs()}</div><button type="button" class="btn block" id="fiAdd">${icon('camera')} Agregar foto</button></div>
       <div class="nits"><div class="h">${icon('spark')} NITS · clasificación y redacción</div><div class="sugs" id="fiCat"></div>${G.dictField('fiT', it.nitsText, 'El texto del informe aparece aquí; puedes editarlo')}<span class="muted small">Si lo corriges, NITS aprende cómo redactas.</span></div>
-      <div class="row"><span class="chip t" id="fiGps">${it.lat ? `${icon('pin')} ±${it.acc} m` : 'Ubicación pendiente'}</span></div>`,
+      ${gpsBox(it, 'fiGps')}`,
       footer: `${isNew ? '' : '<button class="btn danger" id="fiDel">' + icon('trash') + '</button>'}<button class="btn primary" id="fiOk">Guardar hallazgo</button>`,
       beforeClose: async () => true
     });
@@ -169,7 +184,8 @@
     s.el.addEventListener('input', e => { const i = e.target.dataset.fc; if (i !== undefined) it.photos[+i].caption = e.target.value; });
     const addPhoto = () => { const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true; inp.setAttribute('capture', 'environment'); inp.onchange = async () => { for (const f2 of inp.files) { try { it.photos.push(await G.compress(f2, 1400, .78)); } catch { G.toast('No se pudo leer una foto'); } } $('#fiPh', s.el).innerHTML = phs(); G.hydrate(s.el); }; inp.click(); };
     $('#fiAdd', s.el).onclick = addPhoto; if (opts.camera) setTimeout(addPhoto, 250);
-    if (isNew) G.gps({ timeout: 8000 }).then(r => { Object.assign(it, { lat: String(r.lat), lon: String(r.lon), acc: String(r.acc) }); const g = $('#fiGps', s.el); if (g) g.innerHTML = `${icon('pin')} ±${r.acc} m`; }).catch(() => { });
+    const repaintF = wireGps(s.el, it, 'fiGps');
+    if (isNew) G.gps({ timeout: 8000 }).then(r => { if (!it.lat) { Object.assign(it, { lat: String(r.lat), lon: String(r.lon), acc: String(r.acc), gpsISO: r.ts }); repaintF(); } }).catch(() => { });
     run();
     if ($('#fiDel', s.el)) $('#fiDel', s.el).onclick = async () => { if (await G.confirmBox('¿Eliminar este hallazgo?', { danger: true, ok: 'Eliminar' })) { v.findings = v.findings.filter(x => x.id !== f.id); A().save(); A().refresh(); s.close(true); } };
     $('#fiOk', s.el).onclick = () => {
@@ -188,9 +204,10 @@
     const it = p ? { ...p } : { id: G.uid(), areaId: a?.id || '', areaLabel: areaLabel(a), name: '', role: '', phone: '', notes: '', createdAt: new Date().toISOString() };
     const s = G.sheet({
       title: isNew ? 'Nuevo contacto' : 'Editar contacto',
-      body: `${field('Nombre', `<input id="peN" value="${esc(it.name)}" autocomplete="off">`, 1)}<div class="g2">${field('Rol o relación', `<input id="peR" value="${esc(it.role)}" placeholder="Presidencia JAC, líder, vecino…">`)}${field('Teléfono', `<input id="peT" inputmode="tel" value="${esc(it.phone)}">`)}</div>${field('Observaciones', G.dictField('peO', it.notes))}`,
+      body: `${field('Nombre', `<input id="peN" value="${esc(it.name)}" autocomplete="off">`, 1)}<div class="g2">${field('Rol o relación', `<input id="peR" value="${esc(it.role)}" placeholder="Presidencia JAC, líder, vecino…">`)}${field('Teléfono', `<input id="peT" inputmode="tel" value="${esc(it.phone)}">`)}</div>${field('Observaciones', G.dictField('peO', it.notes))}${gpsBox(it, 'peGps')}`,
       footer: `${isNew ? '' : '<button class="btn danger" id="peDel">' + icon('trash') + '</button>'}<button class="btn primary" id="peOk">Guardar contacto</button>`
     });
+    wireGps(s.el, it, 'peGps');
     if ($('#peDel', s.el)) $('#peDel', s.el).onclick = async () => { if (await G.confirmBox('¿Eliminar este contacto?', { danger: true, ok: 'Eliminar' })) { v.people = v.people.filter(x => x.id !== p.id); A().save(); A().refresh(); s.close(true); } };
     $('#peOk', s.el).onclick = () => {
       it.name = $('#peN', s.el).value.trim(); if (!it.name) return G.toast('Escribe el nombre');
@@ -205,9 +222,10 @@
     const it = p ? { ...p } : { id: G.uid(), areaId: a?.id || '', areaLabel: areaLabel(a), text: '', responsible: 'ENEL', status: 'Abierto', date: '', createdAt: new Date().toISOString() };
     const s = G.sheet({
       title: isNew ? 'Nuevo pendiente' : 'Editar pendiente',
-      body: `${field('Pendiente', G.dictField('pdT', it.text, 'Ej.: Programar reunión de gestión documental…'), 1)}<div class="g2">${field('Responsable', `<select id="pdR">${opt(C.RESPONSABLES, it.responsible)}</select>`)}${field('Estado', `<select id="pdS">${opt(C.PEND_ESTADOS, it.status)}</select>`)}</div>${field('Fecha de alerta (opcional)', `<input type="date" id="pdD" value="${esc(it.date)}">`)}`,
+      body: `${field('Pendiente', G.dictField('pdT', it.text, 'Ej.: Programar reunión de gestión documental…'), 1)}<div class="g2">${field('Responsable', `<select id="pdR">${opt(C.RESPONSABLES, it.responsible)}</select>`)}${field('Estado', `<select id="pdS">${opt(C.PEND_ESTADOS, it.status)}</select>`)}</div>${field('Fecha de alerta (opcional)', `<input type="date" id="pdD" value="${esc(it.date)}">`)}${gpsBox(it, 'pdGps')}`,
       footer: `${isNew ? '' : '<button class="btn danger" id="pdDel">' + icon('trash') + '</button>'}<button class="btn primary" id="pdOk">Guardar pendiente</button>`
     });
+    wireGps(s.el, it, 'pdGps');
     if ($('#pdDel', s.el)) $('#pdDel', s.el).onclick = async () => { if (await G.confirmBox('¿Eliminar este pendiente?', { danger: true, ok: 'Eliminar' })) { v.pendings = v.pendings.filter(x => x.id !== p.id); A().save(); A().refresh(); s.close(true); } };
     $('#pdOk', s.el).onclick = () => {
       it.text = $('#pdT', s.el).value.trim(); if (!it.text) return G.toast('Escribe el pendiente');
