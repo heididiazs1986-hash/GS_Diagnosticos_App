@@ -1,7 +1,7 @@
 /* catalogs.js · catálogos de GS DX y GS Asistente, ajustados a Bogotá */
 (function (G) {
   const C = {};
-  C.LOCALIDADES = ['Usaquén', 'Chapinero', 'Santa Fe', 'San Cristóbal', 'Usme', 'Tunjuelito', 'Bosa', 'Kennedy', 'Fontibón', 'Engativá', 'Suba', 'Barrios Unidos', 'Teusaquillo', 'Los Mártires', 'Antonio Nariño', 'Puente Aranda', 'La Candelaria', 'Rafael Uribe Uribe', 'Ciudad Bolívar', 'Sumapaz'];
+  C.LOCALIDADES = ['Usaquén', 'Chapinero', 'Santa Fe', 'San Cristóbal', 'Usme', 'Tunjuelito', 'Bosa', 'Kennedy', 'Fontibón', 'Engativá', 'Suba', 'Barrios Unidos', 'Teusaquillo', 'Los Mártires', 'Antonio Nariño', 'Puente Aranda', 'La Candelaria', 'Rafael Uribe Uribe', 'Ciudad Bolívar', 'Sumapaz', 'Soacha'].sort((a, b) => a.localeCompare(b, 'es'));
   C.ZONAS = ['Urbana', 'Rural'];
   C.AREA_TYPES = ['Barrio', 'Sector', 'Vereda', 'UPZ', 'Urbanización', 'Otro'];
 
