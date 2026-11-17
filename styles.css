@@ -191,6 +191,8 @@ input[readonly]{background:var(--surface-2);color:var(--ink-2)}
 .sheet-f{padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line-soft);display:flex;gap:10px;background:var(--bg)}
 .sheet-f .btn{flex:1}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tiles .tg{grid-column:1/-1;margin:6px 2px 0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-ink,#B34700);font-weight:800}
+.tiles .tg:first-child{margin-top:0}
 .tile{border:1.5px solid var(--line-soft);background:var(--surface);border-radius:var(--r-lg);padding:14px 6px 11px;display:grid;justify-items:center;gap:6px;font-weight:800;font-size:13px;min-height:92px;text-align:center}
 .tile svg.ic{font-size:27px}
 .tile:active{background:var(--surface-2)}

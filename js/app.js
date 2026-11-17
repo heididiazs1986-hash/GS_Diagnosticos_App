@@ -167,7 +167,7 @@
   }
   async function quick() {
     const tiles = [['E', 'pole', 'Estructura', 'Poste o nodo'], ['C', 'gauge', 'Cliente', 'Medidor'], ['U', 'home', 'UNC / Susp.', 'Predio'], ['B', 'lot', 'Baldío', 'Sin servicio'], ['H', 'search', 'Hallazgo', 'Social o territorio'], ['F', 'camera', 'Foto rápida', 'Con nota'], ['P', 'user', 'Contacto', 'Persona'], ['T', 'bell', 'Pendiente', 'Alerta'], ['A', 'pin', 'Sector', 'Nuevo barrio'], ['CD', 'zap', 'Nuevo CD', 'Transformador']];
-    const s = G.sheet({ title: '¿Qué encontraste?', body: `<div class="tiles">${tiles.map(t => `<button class="tile ${['E', 'C', 'U'].includes(t[0]) ? '' : ''}" data-q="${t[0]}">${icon(t[1])}${t[2]}<small>${t[3]}</small></button>`).join('')}</div>${A.cd() ? `<div class="muted small" style="text-align:center">Registrando en CD <b>${esc(A.cd().code)}</b> · ${esc(A.area()?.name || '')}</div>` : ''}` });
+    const s = G.sheet({ title: '¿Qué encontraste?', body: `<div class="tiles">${[['Territorio', ['H', 'F', 'P', 'T', 'A']], ['Caracterización', ['E', 'C', 'U', 'B', 'CD']]].map(([h, ks]) => `<h4 class="tg">${h}</h4>` + ks.map(k => tiles.find(t => t[0] === k)).map(t => `<button class="tile" data-q="${t[0]}">${icon(t[1])}${t[2]}<small>${t[3]}</small></button>`).join('')).join('')}</div>${A.cd() ? `<div class="muted small" style="text-align:center">Registrando en CD <b>${esc(A.cd().code)}</b> · ${esc(A.area()?.name || '')}</div>` : ''}` });
     $$('[data-q]', s.el).forEach(b => b.onclick = async () => {
       const k = b.dataset.q; s.close(true);
       if (['E', 'C', 'U', 'B'].includes(k)) return addRecord(k);
