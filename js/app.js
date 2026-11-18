@@ -80,7 +80,7 @@
     const old = S.recs.filter(r => !r.borrador && !r.exportado && (r.createdAt || '').slice(0, 10) < G.dateLocal(new Date())).length;
     return `<div class="stack" style="gap:10px"><div class="eyebrow">Dónde estás</div><div class="chips-scroll">${chips}</div></div>
     ${old ? `<button class="card flat" data-act="gout" style="border-color:var(--primary);text-align:left"><div class="row"><span class="chip p">${icon('alert')}</span><div class="grow"><b>${old} registro(s) de días anteriores sin exportar</b><div class="muted small">Toca para ir a Salidas y exportarlos.</div></div></div></button>` : ''}
-    ${cd ? `<div class="card cdcard accent"><div class="cdhead"><span class="cdbadge">${icon('zap')}</span><div class="grow"><div class="eyebrow">CD activo</div><h3>${esc(cd.code)}</h3><div class="muted small">${esc(cd.kva)} kVA · ${esc(cd.property)}${cd.os ? ' · OS ' + esc(cd.os) : ''}</div></div>${st ? `<span class="chip ${st === 'Favorable' ? 'ok' : st === 'Crítico' ? 'bad' : 'warn'}">${st}${cd.validatedState ? '' : '?'}</span>` : ''}</div>
+    ${cd ? `<div class="card cdcard accent"><div class="cdhead"><span class="cdbadge">${icon('zap')}</span><div class="grow"><div class="eyebrow">CD activo</div><h3>${esc(cd.code)}</h3><div class="muted small">${esc(cd.kva)} kVA · ${esc(cd.property)}${X.orders(cd).length ? ' · OS ' + esc(X.orders(cd).join(', ')) : ''}</div></div>${st ? `<span class="chip ${st === 'Favorable' ? 'ok' : st === 'Crítico' ? 'bad' : 'warn'}">${st}${cd.validatedState ? '' : '?'}</span>` : ''}</div>
       <div class="kpis">${['E', 'C', 'U', 'S', 'B'].map(t => `<button class="kpi ${S.reg.type === t && false ? 'on' : ''}" data-act="goreg:${t}"><b>${k[t]}</b><span>${({ E: 'Estr.', C: 'Cli.', U: 'UNC', S: 'Susp.', B: 'Bald.' })[t]}</span></button>`).join('')}</div>
       ${k.pend ? `<div class="muted small">${k.pend} sin exportar${k.draft ? ` · ${k.draft} borrador(es)` : ''}</div>` : k.draft ? `<div class="muted small">${k.draft} borrador(es)</div>` : ''}
       <div class="btns"><button class="btn sm" data-act="cdficha">${icon('file')} Ficha técnica</button><button class="btn sm" data-act="cdpick">${icon('undo')} Cambiar CD</button></div></div>`
@@ -93,7 +93,7 @@
     const v = S.visit, out = [], cdS = c => c.validatedState || c.suggestedState;
     v.areas.forEach((x, i) => out.push({ ts: x.createdAt || v.createdAt, kind: 'A', t: i ? `Llegada a ${x.name}` : `Inicio en ${x.name}`, d: areaLabel(x), m: [x.acc && `GPS ±${x.acc} m`], act: `areaedit:${x.id}` }));
     v.cds.forEach(c => out.push({ ts: c.createdAt || v.createdAt, kind: 'CD', t: `CD ${c.code}`, d: `${c.kva} kVA · ${c.property}${c.nitsDescription ? ' · ' + c.nitsDescription : ''}`, chips: cdS(c) ? [[cdS(c), cdS(c) === 'Favorable' ? 'ok' : cdS(c) === 'Crítico' ? 'bad' : 'warn']] : [], act: `cdedit:${c.id}` }));
-    S.recs.forEach(r => out.push({ ts: r.createdAt, kind: r.type, t: R.title(r), d: R.summary(r), m: [`CD ${r.Transformador}`, r.item && `Ítem ${r.item}`, r.Precision && `±${r.Precision} m`, (r.Fotos || []).length && `${r.Fotos.length} fotos`], chips: [r.borrador ? ['Borrador', 'warn'] : r.exportado ? ['Exportado', 'ok'] : ['Pendiente', 'p']], act: `rec:${r.id}` }));
+    S.recs.forEach(r => out.push({ ts: r.createdAt, kind: r.type, t: R.title(r), d: R.summary(r), m: [`CD ${r.Transformador}`, r.item && `Ítem ${r.item}`, r.Precision && `±${r.Precision} m`, (r.Fotos || []).length && `${r.Fotos.length} fotos`], chips: [r.borrador ? ['Borrador', 'warn'] : r.recibido ? ['Recibido', 'ok'] : r.exportado ? ['Exportado', 'ok'] : ['Pendiente', 'p']], act: `rec:${r.id}` }));
     v.findings.forEach(f => out.push({ ts: f.createdAt, kind: 'H', t: f.category || 'Hallazgo', d: f.nitsText || f.obs, m: [(f.photos || []).length && `${f.photos.length} fotos`, f.areaLabel], act: `find:${f.id}` }));
     v.people.forEach(p => out.push({ ts: p.createdAt, kind: 'P', t: p.name, d: [p.role, p.notes].filter(Boolean).join(' · '), act: `person:${p.id}` }));
     v.pendings.forEach(p => out.push({ ts: p.createdAt, kind: 'T', t: p.text, d: `${p.responsible} · ${p.status}${p.date ? ' · ' + G.fmtDate(p.date) : ''}`, act: `pend:${p.id}` }));
@@ -150,10 +150,12 @@
   function tabOut() {
     const v = S.visit, st = Rep.stats(v, S.recs), pendAll = S.recs.filter(r => !r.borrador && !r.exportado).length, drafts = S.recs.filter(r => r.borrador).length;
     const checks = Rep.checks(v, st, pendAll);
-    const codes = [...new Set([...v.cds.map(c => c.code), ...S.recs.map(r => r.Transformador)])];
+    const secs = X.sectors(v, S.recs);
     return `<div class="card"><h3>Revisión antes del informe</h3>${checks.map(c => `<div class="ck"><i class="${c.ok ? 'ok' : 'w'}">${c.ok ? '✓' : '!'}</i>${esc(c.text)}${c.ok ? '' : `<span class="r">${esc(c.r)}</span>`}</div>`).join('')}${drafts ? `<div class="ck"><i class="w">!</i>Registros en borrador<span class="r">${drafts}</span></div>` : ''}</div>
-    <div class="eyebrow">Excel y ZIP de fotos (formato GS DX)</div>
-    ${codes.length ? codes.map(code => { const n = cdCounts(code); return `<div class="card ${n.pend ? 'accent' : 'flat'}"><div class="row"><span class="cdbadge" style="width:40px;height:40px;font-size:20px">${icon('zap')}</span><div class="grow"><h3>CD ${esc(code)}</h3><div class="muted small">${n.pend} por exportar · ${n.E + n.C + n.U + n.S + n.B} en total${n.draft ? ` · ${n.draft} borrador(es) no salen` : ''}</div></div></div><div class="btns"><button class="btn sm primary" data-act="xp:${esc(code)}" ${n.pend ? '' : 'disabled'}>${icon('download')} Pendientes</button><button class="btn sm" data-act="xh:${esc(code)}">Histórico</button></div></div>`; }).join('') : '<div class="empty">Aún no hay CD con registros.</div>'}
+    <div class="eyebrow">Exportar por sector · Excel y fotos</div>
+    ${secs.length ? secs.map(x => { const id = x.id || 'none'; return `<div class="card ${x.pend ? 'accent' : 'flat'}"><div class="row"><span class="cdbadge" style="width:40px;height:40px;font-size:20px">${icon('pin')}</span><div class="grow"><h3>${esc(x.name)}</h3><div class="muted small">${x.loc ? esc(x.loc) + ' · ' : ''}${x.codes.length} CD · ${x.done.length} registros · ${x.finds.length} hallazgos${x.drafts ? ` · ${x.drafts} borrador(es) no salen` : ''}</div></div></div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;margin:8px 0">${x.pend ? `<span class="chip p">${x.pend} por exportar</span>` : ''}${x.sent ? `<span class="chip warn">${x.sent} exportados · falta confirmar recibido</span>` : ''}${x.got ? `<span class="chip ok">${x.got} recibidos</span>` : ''}</div>
+      <div class="btns"><button class="btn sm primary" data-act="xs:${esc(id)}" ${x.pend || x.sent || x.got ? '' : 'disabled'}>${icon('download')} Exportar</button>${x.sent ? `<button class="btn sm" data-act="xc:${esc(id)}">Confirmar recibido</button>` : ''}${x.got ? `<button class="btn sm" data-act="xl:${esc(id)}">${icon('trash')} Limpiar</button>` : ''}</div></div>`; }).join('') : '<div class="empty">Aún no hay registros para exportar.</div>'}
     <div class="eyebrow">Informe y respaldos</div>
     <button class="out p" data-act="report"><span class="ic2">${icon('file')}</span><span class="grow"><b>Informe Word</b><span class="s">Revisar textos y generar · ${st.unc + st.susp} predios UNC, ${st.clients} clientes</span></span>${icon('chev')}</button>
     <button class="out" data-act="backupv"><span class="ic2">${icon('shield')}</span><span class="grow"><b>Respaldo de esta visita</b><span class="s">Archivo JSON con registros y fotos</span></span>${icon('chev')}</button>
@@ -179,7 +181,7 @@
     const r = S.recs.find(x => x.id === id); if (!r) return;
     if (r.exportado && !await G.confirmBox('Este registro ya se exportó. Si lo modificas volverá a quedar pendiente y saldrá otra vez en el próximo Excel. ¿Continuar?', { ok: 'Editar' })) return;
     const saved = await R.open(r.type, r, ctx());
-    if (saved && r.exportado && !saved.borrador) { saved.exportado = false; saved.Exportado = 'No'; await db.put('records', saved); }
+    if (saved && r.exportado && !saved.borrador) { saved.exportado = false; saved.recibido = false; saved.Exportado = 'No'; await db.put('records', saved); }
     await A.refresh();
   }
   async function delRec(id) {
@@ -187,16 +189,70 @@
     if (await G.confirmBox(`¿Eliminar este registro (${R.TYPES[r.type].name}${r.item ? ' ítem ' + r.item : ''})?${r.exportado ? '\nYa fue exportado.' : ''}`, { danger: true, ok: 'Eliminar' })) { await db.del('records', id); await A.refresh(); G.toast('Registro eliminado'); }
   }
 
-  async function exportSheet(code, mode) {
-    const res = await X.build(code, mode, { mark: false });
-    if (!res) return G.toast(mode === 'pend' ? 'No hay registros pendientes en este CD' : 'Este CD no tiene registros');
-    const names = { E: 'estructuras', C: 'clientes', U: 'UNC', S: 'suspensiones', B: 'baldíos' };
-    const s = G.sheet({ title: `Exportar CD ${code}`, body: `<div class="kpis">${['E', 'C', 'U', 'S', 'B'].map(t => `<div class="kpi"><b>${res.counts[t]}</b><span>${({ E: 'Estr.', C: 'Cli.', U: 'UNC', S: 'Susp.', B: 'Bald.' })[t]}</span></div>`).join('')}</div>
-      <p style="margin:0">Se genera un ZIP con el Excel (<b>${mode === 'pend' ? 'PENDIENTE' : 'HISTÓRICO'}</b>) y las fotos en carpetas, igual que GS DX.</p><p class="muted small" style="margin:0">${res.name} · ${(res.blob.size / 1048576).toFixed(1)} MB${mode === 'pend' ? '<br>Al descargar o compartir, estos registros se marcan como exportados.' : ''}</p>`,
+  /* ---- exportar un sector: OS obligatorias → Excel + ZIP → confirmar recibido → limpiar ---- */
+  const secOf = id => X.sectors(S.visit, S.recs).find(x => x.id === (id === 'none' ? '' : id));
+  async function exportSector(id) {
+    const v = S.visit; let sec = secOf(id); if (!sec) return;
+    let withSent = false, busy = false;
+    const s = G.sheet({ title: `Exportar · ${sec.name}`, body: `<div class="kpis" id="xK"></div>
+      <div class="eyebrow" style="margin-top:6px">Órdenes de servicio (obligatorio)</div>
+      <p class="muted small" style="margin:0 0 6px">Registra la OS de cada CD. Un CD puede tener varias.</p>
+      <div class="g2"><div class="field"><label class="l">CD</label><select id="xCd"></select></div><div class="field"><label class="l">OS</label><input id="xOs" autocomplete="off" inputmode="text" placeholder="Número de OS"></div></div>
+      <div class="note" id="xNote" style="margin:0 0 8px"></div><button class="btn block" id="xAdd">${icon('plus')} Agregar OS</button>
+      <div id="xList" style="margin:10px 0"></div><div id="xMiss"></div>
+      <label class="chk" id="xWsW" style="margin-top:6px"><input type="checkbox" id="xWs"> <span>Incluir lo ya exportado</span></label>`,
       footer: `<button class="btn" id="xsh">${icon('share')} Compartir</button><button class="btn primary" id="xdl">${icon('download')} Descargar</button>` });
-    const done = async () => { if (mode === 'pend') { await res.commit(); await A.refresh(); } };
-    $('#xdl', s.el).onclick = async () => { G.download(res.blob, res.name); await done(); s.close(true); G.toast('ZIP descargado'); };
-    $('#xsh', s.el).onclick = async () => { if (await G.shareFile(res.blob, res.name)) { await done(); s.close(true); } else G.toast('Compartir no está disponible aquí: usa Descargar'); };
+    const q = x => $(x, s.el);
+    const state = () => { sec = secOf(id) || sec; const col = X.collect(v, sec, withSent); return { col, cds: X.sectorCds(v, sec, col.codes) }; };
+    const update = () => {
+      const { col, cds } = state(), cur = q('#xCd').value;
+      q('#xK').innerHTML = [['E', 'Estr.'], ['C', 'Cli.'], ['U', 'UNC'], ['S', 'Susp.'], ['B', 'Bald.']].map(([t, l]) => `<div class="kpi"><b>${col.set.filter(r => r.type === t).length}</b><span>${l}</span></div>`).join('') + `<div class="kpi"><b>${col.finds.length}</b><span>Hallaz.</span></div>`;
+      q('#xCd').innerHTML = `<option value="">Elige el CD…</option>` + cds.map(c => `<option value="${esc(c.code)}" ${c.code === cur ? 'selected' : ''}>${esc(c.code)}</option>`).join('');
+      const c = cds.find(c => c.code === q('#xCd').value), n = c ? X.orders(c).length : 0;
+      q('#xNote').style.display = c ? '' : 'none';
+      q('#xNote').innerHTML = c ? (n ? `El CD <b>${esc(c.code)}</b> ya tiene <b>${n}</b> orden(es) registrada(s): ${esc(X.orders(c).join(', '))}.` : `El CD <b>${esc(c.code)}</b> aún no tiene OS.`) : '';
+      q('#xList').innerHTML = cds.map(c => `<div class="li" style="align-items:flex-start"><div class="grow"><b>CD ${esc(c.code)}</b><div class="row" style="gap:6px;flex-wrap:wrap;margin-top:4px">${X.orders(c).length ? X.orders(c).map(o => `<span class="chip p">OS ${esc(o)} <button type="button" data-rm="${esc(c.code)}|${esc(o)}" aria-label="Quitar OS" style="background:none;border:0;color:inherit;font-weight:800;padding:0 0 0 4px">×</button></span>`).join('') : '<span class="muted small">Sin OS</span>'}</div></div></div>`).join('');
+      const miss = cds.filter(c => !X.orders(c).length).map(c => c.code);
+      q('#xMiss').innerHTML = miss.length ? `<div class="note warn"><b>Falta la OS de:</b> ${esc(miss.join(', '))}</div>` : '';
+      const sentN = sec.sent + sec.got; q('#xWsW').style.display = sentN ? '' : 'none';
+      const ok = !miss.length && (col.set.length || col.finds.length) && !busy; q('#xdl').disabled = q('#xsh').disabled = !ok;
+    };
+    q('#xCd').onchange = update; q('#xWs').onchange = e => { withSent = e.target.checked; update(); };
+    q('#xOs').oninput = e => { e.target.value = G.upperCode(e.target.value); };
+    q('#xAdd').onclick = async () => {
+      const { cds } = state(), c = cds.find(c => c.code === q('#xCd').value), os = G.upperCode(q('#xOs').value);
+      if (!c) return G.toast('Elige el CD'); if (!os) return G.toast('Escribe la OS');
+      const cur = X.orders(c); if (cur.includes(os)) return G.toast('Esa OS ya está en este CD');
+      if (cur.length && !await G.confirmBox(`El CD ${c.code} ya tiene ${cur.length} orden(es) registrada(s): ${cur.join(', ')}.\n¿Agregar también la OS ${os}?`, { ok: 'Agregar' })) return;
+      c.orders = [...cur, os]; delete c.os; A.save(); q('#xOs').value = ''; update(); q('#xOs').focus();
+    };
+    s.el.addEventListener('click', e => { const r = e.target.closest('[data-rm]'); if (!r) return; const [code, os] = r.dataset.rm.split('|'), c = v.cds.find(c => c.code === code); if (c) { c.orders = X.orders(c).filter(o => o !== os); delete c.os; A.save(); update(); } });
+    const go = async how => {
+      busy = true; update(); G.toast('Preparando archivos…');
+      try {
+        const res = await X.build(v, sec, { withSent });
+        if (!res) { busy = false; update(); return G.toast('No hay nada por exportar en este sector'); }
+        const done = how === 'dl' ? (G.download(res.blob, res.name), true) : await G.shareFile(res.blob, res.name);
+        if (!done) { busy = false; update(); return G.toast('Compartir no está disponible aquí: usa Descargar'); }
+        await res.commit(); await A.saveNow(); s.close(true); await A.refresh(); askReceived(id);
+      } catch (e) { busy = false; update(); G.toast('No se pudo generar: ' + (e.message || e)); }
+    };
+    q('#xdl').onclick = () => go('dl'); q('#xsh').onclick = () => go('sh');
+    update();
+  }
+  async function askReceived(id) {
+    const sec = secOf(id); if (!sec || !sec.sent) return;
+    const a = await G.choose('¿Confirmas que recibieron los archivos?', [{ label: 'Sí, ya los recibieron', sub: `${sec.sent} elemento(s) de ${sec.name} quedan marcados como recibidos`, primary: true, value: 'yes' }, { label: 'Aún no', sub: 'Quedan exportados. Confírmalo después en Salidas', value: 'no' }]);
+    if (a !== 'yes') return G.toast('Queda pendiente confirmar el recibido');
+    await X.confirmReceived(S.visit, sec); await A.saveNow(); await A.refresh(); G.toast('Recibido confirmado'); offerClean(id);
+  }
+  async function offerClean(id) {
+    const sec = secOf(id); if (!sec || !sec.got) return;
+    const v = S.visit, warn = v.reportGenerated ? '' : ' Aún no has generado el informe Word de esta visita: hazlo antes, porque usa estos datos.';
+    const a = await G.choose('Limpiar la app', [{ label: 'Limpiar este sector', sub: `Borra de este teléfono lo ya recibido de ${sec.name} (${sec.got} registros con sus fotos).${warn}`, primary: true, value: 'clean' }, { label: 'Conservar por ahora', sub: 'Puedes limpiar luego desde Salidas', value: null }]);
+    if (a !== 'clean') return;
+    if (!await G.confirmBox(`Se borrarán de este teléfono los registros, fotos y hallazgos ya recibidos de ${sec.name}. No se puede deshacer.${warn}`, { danger: true, ok: 'Limpiar' })) return;
+    await X.clean(v, sec); await A.saveNow(); await A.refresh(); G.toast('Sector limpio');
   }
   /* elegir fotos del informe: toque = incluir/quitar (el orden es el de selección), con pie de imagen editable */
   function photoPicker(v, sel, onDone) {
@@ -299,8 +355,9 @@
       case 'newfind': return SH.finding();
       case 'newperson': return SH.person();
       case 'newpend': return SH.pending();
-      case 'xp': return exportSheet(arg, 'pend');
-      case 'xh': return exportSheet(arg, 'hist');
+      case 'xs': return exportSector(arg);
+      case 'xc': return askReceived(arg);
+      case 'xl': return offerClean(arg);
       case 'report': return reportSheet();
       case 'backupv': { const r = await X.backup(S.visit.id); G.download(r.blob, r.name); return; }
       case 'ics': { const b = X.ics(S.visit, S.visit.pendings); if (!b) return G.toast('Ningún pendiente tiene fecha de alerta'); G.download(b, `Pendientes_${S.visit.id}.ics`); return; }

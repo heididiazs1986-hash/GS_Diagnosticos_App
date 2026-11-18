@@ -64,7 +64,6 @@
       title: 'Nuevo CD / transformador', onClose: () => { if (!done) res(null); },
       body: `${field('Código del CD', `<input id="cnC" autocapitalize="characters" autocomplete="off" placeholder="Ej.: E23456TR1">`, 1)}
       <div class="g2">${field('kVA', `<select id="cnK">${opt([...C.KVA, 'N.V.'], '', 'Selecciona…')}</select>`, 1)}${field('Propiedad', `<select id="cnP">${opt(C.CD_PROPIEDAD, 'ENEL')}</select>`)}</div>
-      ${field('Orden de servicio (opcional)', `<input id="cnO" autocomplete="off" placeholder="OS asociada">`)}
       <p class="muted small" style="margin:0">Solo letras y números en mayúscula. Al guardar, este CD queda activo para registrar estructuras, clientes, UNC y baldíos.</p>`,
       footer: `<button class="btn" data-x2>Cancelar</button><button class="btn primary" id="cnOk">Guardar y registrar</button>`
     });
@@ -74,7 +73,7 @@
       const code = G.upperCode($('#cnC', s.el).value), kva = $('#cnK', s.el).value;
       if (!code) return G.toast('Escribe el código del CD'); if (!kva) return G.toast('Elige los kVA');
       if (v.cds.some(c => c.code === code)) return G.toast('Ese CD ya está en esta visita');
-      const c = G.cdOf(code, kva); c.property = $('#cnP', s.el).value; c.os = $('#cnO', s.el).value.trim(); c.areaId = v.activeAreaId;
+      const c = G.cdOf(code, kva); c.property = $('#cnP', s.el).value; c.areaId = v.activeAreaId;
       G.gps({ timeout: 9000 }).then(r => { c.lat = String(r.lat); c.lon = String(r.lon); c.acc = String(r.acc); A().save(); }).catch(() => { });
       v.cds.push(c); v.activeCdId = c.id; done = true; A().save(); A().refresh(); s.close(true); G.toast(`CD ${code} activo`); res(c);
     };
@@ -96,14 +95,13 @@
     const s = G.sheet({
       title: `Ficha técnica · ${it.code}`,
       body: `<div class="g2">${field('kVA', `<select id="cdK">${opt([...C.KVA, 'N.V.'], it.kva)}</select>`)}${field('Propiedad', `<select id="cdP">${opt(C.CD_PROPIEDAD, it.property)}</select>`)}</div>
-      ${field('Orden de servicio', `<input id="cdO" value="${esc(it.os || '')}" autocomplete="off">`)}
       <div class="gps"><span class="dot"></span><div class="grow"><b id="cdGt">${it.lat ? it.lat + ', ' + it.lon : 'Sin ubicación'}</b><small>${it.acc ? '±' + it.acc + ' m' : ''}</small></div><button class="btn sm" id="cdGb">${icon('pin')} Capturar</button></div>
       <div id="cdNits"></div>${groups}
       ${field('Observaciones técnicas', G.dictField('cdObs', it.obs || '', 'Describe la infraestructura con tus palabras…'))}
       ${field('Descripción para el informe (NITS)', G.dictField('cdDesc', it.nitsDescription || '', 'NITS la redacta con lo que marcaste'))}`,
       footer: `<button class="btn danger" id="cdDel">${icon('trash')}</button><button class="btn primary" id="cdOk">Guardar ficha</button>`
     });
-    const read = () => { it.kva = $('#cdK', s.el).value; it.property = $('#cdP', s.el).value; it.os = $('#cdO', s.el).value.trim(); it.obs = $('#cdObs', s.el).value; Object.keys(C.techGroups).forEach(k => it[k] = grab(s.el, k)); };
+    const read = () => { it.kva = $('#cdK', s.el).value; it.property = $('#cdP', s.el).value; it.obs = $('#cdObs', s.el).value; Object.keys(C.techGroups).forEach(k => it[k] = grab(s.el, k)); };
     const paint = () => {
       read(); const sg = N.suggestState(it); it.suggestedState = sg.state;
       const cur = it.validatedState;
